@@ -3,6 +3,7 @@ package com.example.userBorrowBook.controller;
 import com.example.userBorrowBook.model.UserApp;
 import com.example.userBorrowBook.repository.UserAppRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +13,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class UserAppController {
 
     @Autowired
@@ -57,10 +59,14 @@ public class UserAppController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable String id) {
+    public ResponseEntity<?> deleteUser(@PathVariable String id) {
         try {
             userAppRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (DataIntegrityViolationException e) {
+            // This exception is thrown when a database constraint is violated
+            String errorMessage = "Cannot delete the user because it is assigned to one or more borrows.";
+            return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

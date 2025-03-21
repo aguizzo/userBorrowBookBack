@@ -12,5 +12,8 @@ import java.util.List;
 
 @Repository
 public interface BorrowRepository extends JpaRepository<Borrow, String>, JpaSpecificationExecutor<Borrow> {
+    List<Borrow> findByUserId(String userId);
+
+    List<Borrow> findByBookId(String bookId);
     // Custom query methods}
 }

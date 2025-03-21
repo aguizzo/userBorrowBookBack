@@ -3,6 +3,7 @@ package com.example.userBorrowBook.controller;
 import com.example.userBorrowBook.model.Book;
 import com.example.userBorrowBook.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,15 +58,19 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteBook(@PathVariable String id) {
-
+    public ResponseEntity<?> deleteBook(@PathVariable String id) {
         try {
             bookRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (DataIntegrityViolationException e) {
+            // This exception is thrown when a database constraint is violated
+            String errorMessage = "Cannot delete the book because it is assigned to one or more borrows.";
+            return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @GetMapping("/author/{author}")
     public ResponseEntity<List<Book>> getBooksByAuthor(@PathVariable String author) {
